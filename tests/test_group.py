@@ -25,3 +25,14 @@ def test_construct_cyclic(n):
     for i in xrange(n):
         for j in xrange(n):
             (C[i] * C[j]).name == (i+j)%n
+
+def test_element_order():
+    C = group.cyclic(6)
+    expected = [1,6,3,2,3,6]
+    for i in xrange(6):
+        assert len(C[i]) == expected[i]
+
+@pytest.mark.parametrize("n",[1,4,7])
+def test_group_order(n):
+    C = group.cyclic(n)
+    assert len(C) == n
