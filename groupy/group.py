@@ -1,4 +1,5 @@
 import itertools
+import collections
 
 def from_matrix(array):
     #TODO: checks on matrix properties
@@ -61,6 +62,14 @@ class Group(object):
     def __rmul__(self, other):
         #left coset
         return set([other * ele for ele in self.elements.values()])
+
+    def order_by_subgroups(self, subgroups=None):
+        #TODO:also assumes that identity is first lexicographically
+        elements = sorted(self.elements.keys())
+        #reverse order here, assuming the user wanted the first subgroup to be most prominent
+        for subgroup in subgroups[::-1]:
+            elements.sort(key=lambda x : sorted([ele.name for ele in self[x]*subgroup]))
+        return elements
 
     def subgroup(self, generators):
         #TODO: bet this can be way more efficient!
