@@ -52,3 +52,11 @@ def test_right_coset():
     coset = F * D["1"]
     names = set(c.name for c in coset)
     assert names == expected
+
+def test_order_by_subgroup():
+    D = group.dihedral(6)
+    R = D.subgroup([D["2"]])
+    F = D.subgroup([D["f0"]])
+    ordered = D.order_by_subgroups([R,F])
+    expected = ['0', '2', '4', '1', '3', '5', 'f0', 'f4', 'f2', 'f5', 'f3', 'f1']
+    assert ordered == expected
