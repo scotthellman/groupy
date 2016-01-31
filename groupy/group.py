@@ -34,6 +34,35 @@ class Group(object):
     def __len__(self):
         return self.compute_order()
 
+    #TODO: group producst; right now this is just cosets
+    def __mul__(self, other):
+        #right coset
+        return [ele * other for ele in self.elements.values()]
+
+    def __rmul__(self, other):
+        #left coset
+        return [other * ele for ele in self.elements.values()]
+
+    def subgroup(self, generators):
+        #TODO: bet this can be way more efficient!
+        subgroup = set()
+        novel = set(generators)
+        while len(novel) > 0:
+            subgroup |= novel
+            novel = set()
+            for left in subgroup:
+                for right in subgroup:
+                    result = left*right
+                    if result not in subgroup:
+                        novel.add(result)
+
+        subgroup_dict = {}
+        for left in subgroup:
+            subgroup_dict[left.name] = {}
+            for right in subgroup:
+                subgroup_dict[left.name][right.name] = (left*right).name
+        return Group(subgroup_dict)
+
     def compute_order(self):
         return len(self.elements)
 
@@ -44,10 +73,15 @@ class Group(object):
             #self.order = self.compute_order()
 
         def __mul__(self, other):
-            return self.group.multiply(self.name, other.name)
+            if isinstance(other, Group):
+                return other.__rmul__(self)
+            try:
+                return self.group.multiply(self.name, other.name)
+            except KeyError:
+                return other.group.multiply(self.name, other.name)
 
-        def __rmul__(self, other):
-            return self.group.multiply(other.name, self.name)
+        #def __rmul__(self, other):
+        #    return self.__mul__(other, self)
 
         def __eq__(self, other):
             return self.name == other.name and self.group == other.group
