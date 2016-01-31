@@ -1,3 +1,5 @@
+import itertools
+
 def from_matrix(array):
     #TODO: checks on matrix properties
     lookup = array[0]
@@ -15,6 +17,23 @@ def cyclic(n):
         for j in xrange(n):
             operator_dict[i][j] = (i+j)%n
     return Group(operator_dict)
+
+def dihedral(n):
+    operator_dict = {}
+    for lr,lf in itertools.product(range(n), ["","f"]):
+        lname = "{}{}".format(lf, lr)
+        operator_dict[lname] = {}
+        for rr,rf in itertools.product(range(n), ["","f"]):
+            rname = "{}{}".format(rf, rr)
+            result_f = "f" if lf != rf else ""
+            if not rf:
+                result_r = (lr + rr)%n
+            else:
+                result_r = ((n - lr) + rr) % n
+            result_name = "{}{}".format(result_f,result_r)
+            operator_dict[lname][rname] = result_name
+    return Group(operator_dict)
+
 
 class Group(object):
 
@@ -37,11 +56,11 @@ class Group(object):
     #TODO: group producst; right now this is just cosets
     def __mul__(self, other):
         #right coset
-        return [ele * other for ele in self.elements.values()]
+        return set([ele * other for ele in self.elements.values()])
 
     def __rmul__(self, other):
         #left coset
-        return [other * ele for ele in self.elements.values()]
+        return set([other * ele for ele in self.elements.values()])
 
     def subgroup(self, generators):
         #TODO: bet this can be way more efficient!
