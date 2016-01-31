@@ -36,3 +36,19 @@ def test_element_order():
 def test_group_order(n):
     C = group.cyclic(n)
     assert len(C) == n
+
+def test_left_coset():
+    D = group.dihedral(4)
+    F = D.subgroup([D["f0"]])
+    expected = set(["1","f3"])
+    coset = D["1"] * F
+    names = set(c.name for c in coset)
+    assert names == expected
+
+def test_right_coset():
+    D = group.dihedral(4)
+    F = D.subgroup([D["f0"]])
+    expected = set(["1","f1"])
+    coset = F * D["1"]
+    names = set(c.name for c in coset)
+    assert names == expected
