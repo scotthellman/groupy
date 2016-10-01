@@ -54,7 +54,7 @@ class Group(object):
     def __len__(self):
         return self.compute_order()
 
-    #TODO: group producst; right now this is just cosets
+    #TODO: group products; right now this is just cosets
     def __mul__(self, other):
         #right coset
         return set([ele * other for ele in self.elements.values()])
@@ -62,6 +62,38 @@ class Group(object):
     def __rmul__(self, other):
         #left coset
         return set([other * ele for ele in self.elements.values()])
+
+    def find_generators(self):
+        generators = []
+        options = [e.name for e in self.elements.values()]
+        orders = {name:len(self[name]) for name in self.elements.keys()}
+        while options:
+            largest = self[max(options, key=lambda x : orders[x])]
+            generators.append(largest)
+            removed = set([largest.name])
+            cycle =  largest * largest
+            while cycle != largest:
+                removed.add(cycle.name)
+                cycle *= largest
+            options = [o for o in options if o not in removed]
+
+        return self._prune_generators(generators)
+
+    def _prune_generators(self, generators):
+        #not exhaustive, just takes care of obvious cases (eg, half of D being in generators)
+
+        kept = set()
+        seen = set()
+
+        for g in generators:
+            if g not in seen:
+                kept.add(g)
+            for h in generators:
+                if h not in seen:
+                    kept.add(h)
+                seen.add(g*h)
+                seen.add(h*g)
+        return kept
 
     def order_by_subgroups(self, subgroups=None):
         #TODO:also assumes that identity is first lexicographically
