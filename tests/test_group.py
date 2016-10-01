@@ -60,3 +60,18 @@ def test_order_by_subgroup():
     ordered = D.order_by_subgroups([R,F])
     expected = ['0', '2', '4', '1', '3', '5', 'f0', 'f4', 'f2', 'f5', 'f3', 'f1']
     assert ordered == expected
+
+@pytest.mark.parametrize("n",[1,4,7])
+def test_cyclic_generators(n):
+    C = group.cyclic(n)
+    gens = C.find_generators()
+    assert len(gens) == 1
+    assert len(gens) == n
+
+@pytest.mark.parametrize("n",[3,4,7])
+def test_cyclic_generators(n):
+    C = group.dihedral(n)
+    gens = C.find_generators()
+    assert len(gens) == 2
+    assert any([e.name[0] == 'f' for e in gens])
+    assert any([e.name == '1' for e in gens])
