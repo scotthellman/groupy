@@ -79,6 +79,25 @@ class Group(object):
 
         return self._prune_generators(generators)
 
+    def get_presentation(self):
+        #TODO: how should i actually do this?
+        generators = self.find_generators()
+        inverses = [g.inverse() for g in generators]
+
+        gen_identities = [[g,i] for g,i in zip(generators, inverses)]
+
+        pair_identities = []
+
+        for g in generators:
+            for h in generators:
+                if g != h:
+                    product = g*h
+                    inverted = product.inverse()
+                    pair_identities.append([product, inverted])
+
+        return generators, gen_identities + pair_identities
+
+
     def _prune_generators(self, generators):
         #not exhaustive, just takes care of obvious cases (eg, half of D being in generators)
 
@@ -165,3 +184,13 @@ class Group(object):
                 current*=self
                 count += 1
             return count
+
+        def inverse(self):
+            prev = self
+            current = self
+            new = self*self
+            while new != self:
+                prev = current
+                current = new
+                new *= self
+            return prev
