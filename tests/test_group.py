@@ -66,12 +66,17 @@ def test_cyclic_generators(n):
     C = group.cyclic(n)
     gens = C.find_generators()
     assert len(gens) == 1
-    assert len(gens) == n
 
 @pytest.mark.parametrize("n",[3,4,7])
-def test_cyclic_generators(n):
+def test_dihedral_generators(n):
     C = group.dihedral(n)
     gens = C.find_generators()
     assert len(gens) == 2
     assert any([e.name[0] == 'f' for e in gens])
     assert any([e.name == '1' for e in gens])
+
+@pytest.mark.parametrize("n",[3,4,7])
+def test_cyclic_inverses(n):
+    C = group.cyclic(n)
+    for i in xrange(n):
+        assert C[i].inverse() == C[(n - i) % n]
