@@ -63,6 +63,29 @@ class Group(object):
         #left coset
         return set([other * ele for ele in self.elements.values()])
 
+    @staticmethod
+    def from_presentation(gens, relations, max_depth=25):
+        #TODO: actually build a group
+        assert "e" not in gens
+        words = set()
+        stack = [("",0)]
+        while len(stack) > 0:
+            current,depth = stack.pop()
+            if depth > max_depth:
+                print "hit max depth with", current
+                continue
+            for r in relations:
+                while r in current:
+                    loc = current.index(r)
+                    current = current[:loc] + current[loc+len(r):]
+            if current in words:
+                continue
+            words.add(current)
+            for g in gens:
+                stack.append((g+current,depth+1))
+                stack.append((current+g,depth+1))
+        return words
+
     def find_generators(self):
         generators = []
         options = [e.name for e in self.elements.values()]
