@@ -1,6 +1,85 @@
 import itertools
 import collections
 
+def rewrite(word, relations):
+    dirty = True
+    while dirty:
+        dirty = False
+        for left,right in relations:
+            index = word.find(left)
+            while index != -1:
+                word = word[:index] + right + word[index + len(left):]
+                index = word.find(left)
+                dirty = True
+    return word
+
+def reduce_relations(relations):
+    kept = [1 for r in relations]
+    for i,r in enumerate(relations):
+        for j,s in enumerate(relations):
+            if i != j and s[0] in r[0]:
+                kept[i] = 0
+                break
+    return sorted(list(itertools.compress(relations, kept)))
+
+def find_critical(relations):
+    criticals = []
+    for i,(r,rc) in enumerate(relations):
+        for s,sc in relations[i+1:]:
+            for j in range(1,len(r)+1):
+                if r[-j:] != s[:j]:
+                    break
+            j -= 1
+            if j != 0:
+                print "!",r[:-j],s[:], r, s, j
+                criticals.append((r[:-j]+s[:],((r,rc),(s,sc))))
+    return criticals
+
+def find_normal_words(gens, relations):
+    kept = set([""])
+    words = [""]
+    while words:
+        print words
+        print kept
+        print "-"*20
+        word = words.pop()
+        for g in gens:
+            print g
+            for new in [g + word, word + g]:
+                print new
+                if rewrite(new, relations) == new:
+                    if new not in kept:
+                        kept.add(new)
+                        words.append(new)
+    return kept
+
+def from_presentation(relations, iterations=100):
+    #relations = ((left,right),...)
+    relations = sorted(relations)
+    criticals = find_critical(relations)
+    print criticals
+    modified = True
+    for i in range(iterations):
+        modified = False
+        for word,rels in criticals:
+            left = rewrite(word, [rels[0]])
+            right = rewrite(word, [rels[1]])
+            print word
+            print left, right
+            print rewrite(left,relations), rewrite(right,relations)
+            print "-"*20
+            if len(left) < len(right) or (len(left) == len(right) and left < right):
+                left,right = right,left
+            if rewrite(left,relations) != rewrite(right,relations):
+                print left, right, left > right
+                modified = True
+                relations.append((left, right))
+        relations = reduce_relations(relations)
+        criticals = find_critical(relations)
+        if not modified:
+            break
+    return relations
+
 def from_matrix(array):
     #TODO: checks on matrix properties
     lookup = array[0]
