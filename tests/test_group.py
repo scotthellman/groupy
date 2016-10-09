@@ -80,3 +80,23 @@ def test_cyclic_inverses(n):
     C = group.cyclic(n)
     for i in xrange(n):
         assert C[i].inverse() == C[(n - i) % n]
+
+def test_s3_presentation():
+    rels = [("aaa",""),("rr",""),("arar","")]
+    gens = ["a","r"]
+    G = group.from_presentation(gens, rels, 100)
+    #these asserts are not sufficient
+    assert len(G) == 6
+    assert len(G["a"] == 3)
+    assert len(G["r"] == 2)
+    assert len(G["ra"] == 2)
+
+@pytest.mark.parametrize("n",[3,4,7])
+def test_c_presentation(n):
+    rels = [("1"*n,"")]
+    gens = ["1"]
+    G = group.from_presentation(gens, rels, 100)
+    assert len(G) == n
+    for i,name in enumerate(["1"*i for i in range(1,n)]):
+        expected = (i+1+1)%n
+        assert G[name] * G["1"] == G["1"*expected]
