@@ -31,7 +31,6 @@ def find_critical(relations):
                     break
             j -= 1
             if j != 0:
-                print "!",r[:-j],s[:], r, s, j
                 criticals.append((r[:-j]+s[:],((r,rc),(s,sc))))
     return criticals
 
@@ -39,46 +38,47 @@ def find_normal_words(gens, relations):
     kept = set([""])
     words = [""]
     while words:
-        print words
-        print kept
-        print "-"*20
         word = words.pop()
         for g in gens:
-            print g
             for new in [g + word, word + g]:
-                print new
                 if rewrite(new, relations) == new:
                     if new not in kept:
                         kept.add(new)
                         words.append(new)
     return kept
 
-def from_presentation(relations, iterations=100):
+def find_full_relations(relations, iterations=100):
     #relations = ((left,right),...)
+    starting_relations = relations[:]
     relations = sorted(relations)
     criticals = find_critical(relations)
-    print criticals
     modified = True
     for i in range(iterations):
         modified = False
         for word,rels in criticals:
             left = rewrite(word, [rels[0]])
             right = rewrite(word, [rels[1]])
-            print word
-            print left, right
-            print rewrite(left,relations), rewrite(right,relations)
-            print "-"*20
             if len(left) < len(right) or (len(left) == len(right) and left < right):
                 left,right = right,left
             if rewrite(left,relations) != rewrite(right,relations):
-                print left, right, left > right
                 modified = True
                 relations.append((left, right))
         relations = reduce_relations(relations)
         criticals = find_critical(relations)
         if not modified:
             break
+    else:
+        raise HaltingError("{} failed to converge given {} iterations".format(starting_relations,iterations))
     return relations
+
+def from_presentation(gens, relations, iterations=100):
+    all_relations = find_full_relations(relations, iterations)
+    words = sorted(find_normal_words(gens,all_relations))
+    operator_dict = {w:{} for w in words}
+    for l in words:
+        for r in words:
+            operator_dict[l][r] = rewrite(l+r,all_relations)
+    return Group(operator_dict)
 
 def from_matrix(array):
     #TODO: checks on matrix properties
@@ -141,29 +141,6 @@ class Group(object):
     def __rmul__(self, other):
         #left coset
         return set([other * ele for ele in self.elements.values()])
-
-    @staticmethod
-    def from_presentation(gens, relations, max_depth=25):
-        #TODO: actually build a group
-        assert "e" not in gens
-        words = set()
-        stack = [("",0)]
-        while len(stack) > 0:
-            current,depth = stack.pop()
-            if depth > max_depth:
-                print "hit max depth with", current
-                continue
-            for r in relations:
-                while r in current:
-                    loc = current.index(r)
-                    current = current[:loc] + current[loc+len(r):]
-            if current in words:
-                continue
-            words.add(current)
-            for g in gens:
-                stack.append((g+current,depth+1))
-                stack.append((current+g,depth+1))
-        return words
 
     def find_generators(self):
         generators = []
