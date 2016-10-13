@@ -25,13 +25,15 @@ def reduce_relations(relations):
 def find_critical(relations):
     criticals = []
     for i,(r,rc) in enumerate(relations):
-        for s,sc in relations[i+1:]:
-            for j in range(1,len(r)+1):
-                if r[-j:] != s[:j]:
+        for j,(s,sc) in enumerate(relations):
+            if i == j:
+                continue
+            for k in range(1,len(r)+1):
+                if r[-k:] != s[:k]:
                     break
-            j -= 1
-            if j != 0:
-                criticals.append((r[:-j]+s[:],((r,rc),(s,sc))))
+            k -= 1
+            if k != 0:
+                criticals.append((r[:-k]+s[:],((r,rc),(s,sc))))
     return criticals
 
 def find_normal_words(gens, relations):
