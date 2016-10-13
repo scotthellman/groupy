@@ -87,9 +87,9 @@ def test_s3_presentation():
     G = group.from_presentation(gens, rels, 100)
     #these asserts are not sufficient
     assert len(G) == 6
-    assert len(G["a"] == 3)
-    assert len(G["r"] == 2)
-    assert len(G["ra"] == 2)
+    assert len(G["a"]) == 3
+    assert len(G["r"]) == 2
+    assert len(G["ra"]) == 2
 
 @pytest.mark.parametrize("n",[3,4,7])
 def test_c_presentation(n):
