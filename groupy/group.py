@@ -123,6 +123,12 @@ class Group(object):
         self.operator_dict = operator_dict
         self.elements = {name:self.Element(self,name) for name in operator_dict.keys()}
 
+        #TODO: i reference self.presention in the getter, this is a hack
+        #need to refactor how groups are constructed
+        #TODO: also breaks any group whose elements are not named after the generators
+        self.presentation = None
+        self.presentation = self.get_presentation()
+
     def get_element(self, name):
         return self.elements[name]
 
@@ -130,6 +136,8 @@ class Group(object):
         return self.elements[self.operator_dict[left][right]]
 
     def __getitem__(self, index):
+        if self.presentation != None:
+            return self.elements[rewrite(index, self.presentation[1])]
         return self.elements[index]
 
     def __len__(self):
@@ -176,7 +184,10 @@ class Group(object):
                     inverted = product.inverse()
                     pair_identities.append([product, inverted])
 
-        return generators, gen_identities + pair_identities
+        gen_strings = [str(g) for g in generators]
+        presentation = gen_identities + pair_identities
+        presentation = [(str(l)+str(r),"") for l,r in presentation]
+        return gen_strings, presentation
 
 
     def _prune_generators(self, generators):
