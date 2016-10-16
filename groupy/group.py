@@ -122,11 +122,15 @@ class Group(object):
     def __init__(self, operator_dict):
         self.operator_dict = operator_dict
         self.elements = {name:self.Element(self,name) for name in operator_dict.keys()}
+        self.generators = None
+        self.presentation = None
+        self.generators = self.find_generators()
+
+        self.assign_normal_names()
 
         #TODO: i reference self.presention in the getter, this is a hack
         #need to refactor how groups are constructed
         #TODO: also breaks any group whose elements are not named after the generators
-        self.presentation = None
         self.presentation = self.get_presentation()
 
     def get_element(self, name):
@@ -137,7 +141,7 @@ class Group(object):
 
     def __getitem__(self, index):
         if self.presentation != None:
-            return self.elements[rewrite(index, self.presentation[1])]
+            return self.normal_map[rewrite(index, self.presentation[1])]
         return self.elements[index]
 
     def __len__(self):
@@ -152,7 +156,29 @@ class Group(object):
         #left coset
         return set([other * ele for ele in self.elements.values()])
 
+    def assign_normal_names(self):
+        #because of how i find generators, i know i can find everything by looking
+        #at all gen cycles
+        #TODO: hah not true! need to do a search i guess
+        element_to_gen = {}
+        for gen in self.generators:
+            element_to_gen[gen] = (gen,0)
+            new = gen*gen
+            i = 1
+            while new != gen:
+                element_to_gen[new] = (gen,i)
+                new *= gen
+                i += 1
+        self.normal_map = {}
+        print element_to_gen
+        for element in self.elements.values():
+            gen,factor = element_to_gen[element]
+            idx = str(gen)*factor
+            self.normal_map[idx] = element
+
     def find_generators(self):
+        if self.generators is not None:
+            return self.generators
         generators = []
         options = [e.name for e in self.elements.values()]
         orders = {name:len(self[name]) for name in self.elements.keys()}
