@@ -141,6 +141,8 @@ class Group(object):
 
     def __getitem__(self, index):
         if self.presentation != None:
+            print index, self.presentation[1]
+            print rewrite(index, self.presentation[1])
             return self.normal_map[rewrite(index, self.presentation[1])]
         return self.elements[index]
 
@@ -161,20 +163,22 @@ class Group(object):
         #at all gen cycles
         #TODO: hah not true! need to do a search i guess
         element_to_gen = {}
-        for gen in self.generators:
-            element_to_gen[gen] = (gen,0)
-            new = gen*gen
-            i = 1
-            while new != gen:
-                element_to_gen[new] = (gen,i)
-                new *= gen
-                i += 1
+        options = zip(list(self.generators),[[g] for g in self.generators])
+        while options and len(element_to_gen) < len(self.elements):
+            new_opts = []
+            for ele,path in options:
+                if ele not in element_to_gen:
+                    element_to_gen[ele] = path
+                    new_opts.append((ele,path))
+                    for gen in self.generators:
+                        new_opts.append((gen*ele,[gen]+path))
+                        new_opts.append((ele*gen,path+[gen]))
+            options = new_opts
         self.normal_map = {}
         print element_to_gen
         for element in self.elements.values():
-            gen,factor = element_to_gen[element]
-            idx = str(gen)*factor
-            self.normal_map[idx] = element
+            path = element_to_gen[element]
+            self.normal_map["".join(str(p) for p in path)] = element
 
     def find_generators(self):
         if self.generators is not None:
