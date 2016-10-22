@@ -128,7 +128,6 @@ class Group(object):
 
         self.assign_normal_names()
 
-        #TODO: i reference self.presention in the getter, this is a hack
         #need to refactor how groups are constructed
         #TODO: also breaks any group whose elements are not named after the generators
         self.presentation = self.get_presentation()
@@ -140,11 +139,10 @@ class Group(object):
         return self.elements[self.operator_dict[left][right]]
 
     def __getitem__(self, index):
-        if self.presentation != None:
-            print index, self.presentation[1]
-            print rewrite(index, self.presentation[1])
+        try:
             return self.normal_map[rewrite(index, self.presentation[1])]
-        return self.elements[index]
+        except (KeyError, AttributeError):
+            return self.elements[index]
 
     def __len__(self):
         return self.compute_order()
@@ -200,12 +198,14 @@ class Group(object):
 
     def get_presentation(self):
         #TODO: how should i actually do this?
+        #TODO: this whole sequence of functions probably shouldn't be publicly exposed
         generators = self.find_generators()
         inverses = [g.inverse() for g in generators]
 
         gen_identities = [[g,i] for g,i in zip(generators, inverses)]
 
-        pair_identities = []
+        #seed with normal word knowledge
+        pair_identities = [(str(e),n) for n,e in self.normal_map.items()]
 
         for g in generators:
             for h in generators:
